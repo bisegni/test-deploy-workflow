@@ -1,17 +1,23 @@
-name: manual approval demo
+name: configure new deployment
 on:
-    workflow_call:
+    workflow_dispatch:
         inputs:
-            deploy-image:
+            deployment_image:
+                description: 'Image to deploy'
                 required: true
                 type: string
-        secrets:
-            token:
-                required: false
 jobs:
+    prepare:
+        runs-on: ubuntu-latest
+        env:
+            DEPLOY_IMAGE: ${{ inputs.deployment_image }}
+        steps:
+            - run: |
+                echo "COnfigure deploy with image $DEPLOY_IMAGE"
     test:
         runs-on: ubuntu-latest
         environment: test
+        needs: prepare
         steps:
         - name: "patch configuration for test"
           run: |
@@ -21,6 +27,7 @@ jobs:
         environment:
             name: production
             url: https://github.com
+        needs: test
         steps:
         - name: "patch configuration for test"
           run: |
