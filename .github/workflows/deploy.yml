@@ -9,14 +9,14 @@ on:
             token:
                 required: false
 jobs:
-    test-deployment:
+    test:
         runs-on: ubuntu-latest
         environment: test
         steps:
         - name: "patch configuration for test"
           run: |
             echo "patch test conf"
-    production-deployment:
+    production:
         runs-on: ubuntu-latest
         environment:
             name: production
