@@ -1,0 +1,27 @@
+name: manual approval demo
+on:
+    workflow_call:
+        inputs:
+            deploy-image:
+                required: true
+                type: string
+        secrets:
+            token:
+                required: false
+jobs:
+    test-deployment:
+        runs-on: ubuntu-latest
+        environment: test
+        steps:
+        - name: "patch configuration for test"
+          run: |
+            echo "patch test conf"
+    production-deployment:
+        runs-on: ubuntu-latest
+        environment:
+            name: production
+            url: https://github.com
+        steps:
+        - name: "patch configuration for test"
+          run: |
+                echo "patch prod conf":
