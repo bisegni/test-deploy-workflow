@@ -1,0 +1,43 @@
+name: Build and test
+on: 
+    workflow_call:
+        secrets:
+            token:
+                required: false
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+    build:
+      runs-on: ubuntu-latest
+      steps:
+          - name: Checkout source code
+            uses: actions/checkout@v3
+          # - name: Restore cached build directory
+          #   id: cache-build-restore
+          #   uses: actions/cache@v3
+          #   with:
+          #     path: build
+          #     key: debian-bullseye-${{ hashFiles('CMakeLists.txt') }}
+          - name: build
+            run: |
+              echo "Build source code"
+    test:
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        - name: execute tests
+          run: |
+            echo "execute test"
+    make-docker:
+      runs-on: ubuntu-latest
+      steps:
+        - run: |
+            echo "build docke image"
+    deploy:
+        name: update configuration project
+        runs-on: ubuntu-latest
+        steps:
+          - run: |
+              echo "patch configuration pro"
+
