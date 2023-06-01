@@ -13,7 +13,7 @@ jobs:
             DEPLOY_IMAGE: ${{ inputs.deployment_image }}
         steps:
             - run: |
-                echo "COnfigure deploy with image $DEPLOY_IMAGE"
+                echo "Configure deploy with image $DEPLOY_IMAGE"
     test:
         runs-on: ubuntu-latest
         environment: test

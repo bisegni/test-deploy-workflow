@@ -31,12 +31,14 @@ jobs:
             echo "execute test"
     make-docker:
       runs-on: ubuntu-latest
+      needs: test
       steps:
         - run: |
             echo "build docke image"
     deploy:
         name: update configuration project
         runs-on: ubuntu-latest
+        needs: make-docker
         steps:
           - run: |
               echo "patch configuration pro"
