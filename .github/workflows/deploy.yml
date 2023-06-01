@@ -1,4 +1,4 @@
-name: configure new deployment
+name: deployment
 on:
     workflow_dispatch:
         inputs:
