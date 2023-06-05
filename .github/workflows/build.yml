@@ -44,8 +44,6 @@ jobs:
       steps:
         - name: Checkout source code
           uses: actions/checkout@v3
-        - name: Extract Git Tag
-          run: echo "GIT_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
         - name: manage version
           run: |
             pushd /tmp
@@ -75,7 +73,7 @@ jobs:
             images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
             # generate Docker tags based on the following events/attributes
             tags: |
-              type=sha
+              type=sha,enable={{is_default_branch}}
               type=semver,pattern={{version}}
             labels: |
               maintainer=bisegni@slac.stanford.edu
@@ -83,7 +81,7 @@ jobs:
           uses: docker/build-push-action@v4
           id: build_and_push
           with:
-            context: .
+            #context: .
             push: true
             tags: ${{ steps.meta.outputs.tags }}
             labels: ${{ steps.meta.outputs.labels }}
