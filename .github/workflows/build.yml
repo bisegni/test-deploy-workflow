@@ -52,6 +52,7 @@ jobs:
             export PATH="${PATH}:/tmp"
             popd
             export commandoutput="$(gitversion)"
+            echo $commandoutput
             export MAJOR_VERSION="$(echo "$commandoutput" | jq '.Major')"
             export MINOR_VERSION="$(echo "$commandoutput" | jq '.Minor')"
             export PATCH_VERSION="$(echo "$commandoutput" | jq '.Patch')"
