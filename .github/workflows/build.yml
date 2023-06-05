@@ -73,8 +73,7 @@ jobs:
             images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
             # generate Docker tags based on the following events/attributes
             tags: |
-              type=sha,enable={{is_default_branch}}
-              type=semver,pattern={{version}}
+              type=sha
             labels: |
               maintainer=bisegni@slac.stanford.edu
         - name: Build and push Docker image
