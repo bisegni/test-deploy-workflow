@@ -7,6 +7,10 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
+env:
+  GITVERSION_VERSION: 5.12.0
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 jobs:
     build:
       runs-on: ubuntu-latest
@@ -29,25 +33,70 @@ jobs:
         - name: execute tests
           run: |
             echo "execute test"
-    build-docker:
+    # build-docker:
+    #   runs-on: ubuntu-latest
+    #   needs: test
+    #   outputs:
+    #     docker-image: 
+    #   steps:
+    #     - id: build_docker
+    #       run: |
+    #         echo "build docke image"
+    #         echo "DOCKER_IMAGE=new-docker-version" >> $GITHUB_OUTPUT
+    build-docker-images:
       runs-on: ubuntu-latest
-      needs: test
       outputs:
-        docker-image: ${{ steps.build_docker.outputs.DOCKER_IMAGE }}
+        IMAGE_TO_DEPLOY: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }}
       steps:
-        - id: build_docker
+        - name: manage version
           run: |
-            echo "build docke image"
-            echo "DOCKER_IMAGE=new-docker-version" >> $GITHUB_OUTPUT
+            pushd /tmp
+            wget https://github.com/GitTools/GitVersion/releases/download/$GITVERSION_VERSION/gitversion-linux-x64-$GITVERSION_VERSION.tar.gz
+            ls -la
+            tar zxvf gitversion-linux-x64-$GITVERSION_VERSION.tar.gz
+            export PATH="${PATH}:/tmp"
+            popd
+            export commandoutput="$(gitversion)"
+            export MAJOR_VERSION="$(echo "$commandoutput" | jq '.Major')"
+            export MINOR_VERSION="$(echo "$commandoutput" | jq '.Minor')"
+            export PATCH_VERSION="$(echo "$commandoutput" | jq '.Patch')"
+            echo "#define APP_VERSION \"v$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION\"" > version.h
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v2
+        - name: Log in to the Container registry
+          uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+          with:
+            registry: ${{ env.REGISTRY }}
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+        - name: Docker Metadata
+          id: meta
+          uses: docker/metadata-action@v4
+          with:
+            # list of Docker images to use as base name for tags
+            images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            # generate Docker tags based on the following events/attributes
+            tags: |
+              type=sha,enable={{is_default_branch}}
+              type=semver,pattern={{version}}
+            labels: |
+              maintainer=bisegni@slac.stanford.edu
+        - name: Build and push Docker image
+          uses: docker/build-push-action@v4
+          id: build_and_push
+          with:
+            context: .
+            push: true
+            tags: ${{ steps.meta.outputs.tags }}
+            labels: ${{ steps.meta.outputs.labels }}
     deploy:
         name: deploy-prepare
         runs-on: ubuntu-latest
-        needs: build-docker
+        needs: build-docker-images
         steps:
           - run: |
-              echo "patch configuration pro"
+              echo "patch configuration pro with the image"
           - run: |
-                gh workflow --repo bisegni/test-deploy-workflow run start_deployment -f deployment_image=${{needs.build-docker.outputs.docker-image}}
+                gh workflow --repo bisegni/test-deploy-workflow run start_deployment -f deployment_image="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{needs.build-docker-images.outputs.IMAGE_TO_DEPLOY}} "
             env:
                 GITHUB_TOKEN: ${{ secrets.TRIGGER_WORKFLOW_SECRET }}
-
