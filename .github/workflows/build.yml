@@ -57,11 +57,8 @@ jobs:
             useConfigFile: true
         - name: manage version
           run: |
-            export MAJOR_VERSION="${{ steps.gitversion.outputs.GitVersion_Major }}"
-            export MINOR_VERSION="${{ steps.gitversion.outputs.GitVersion_Minor }}"
-            export PATCH_VERSION="${{ steps.gitversion.outputs.GitVersion_Patch }}"
-            echo "#define APP_VERSION \"v$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION\""
-            #echo "#define APP_VERSION \"v$MAJOR_VERSION.$MINOR_VERSION.$PATCH_VERSION\"" > version.h
+            echo "#define APP_VERSION \"v$GitVersion_Major.$GitVersion_Minor.$GitVersion_Patch\""
+            #echo "#define APP_VERSION \"v$GitVersion_Major.$GitVersion_Minor.$GitVersion_Patch\"" > version.h
         - name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v2
         - name: Log in to the Container registry
