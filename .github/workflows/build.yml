@@ -93,6 +93,6 @@ jobs:
           - run: |
               echo "patch configuration pro with the image"
           - run: |
-                gh workflow --repo bisegni/test-deploy-workflow run start_deployment -f deployment_image="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{needs.build-docker-images.outputs.IMAGE_TO_DEPLOY}} "
+                gh workflow --repo bisegni/test-deploy-workflow run start_deployment -f deployment_image="${{needs.build-docker-images.outputs.IMAGE_TO_DEPLOY}} "
             env:
                 GITHUB_TOKEN: ${{ secrets.TRIGGER_WORKFLOW_SECRET }}
