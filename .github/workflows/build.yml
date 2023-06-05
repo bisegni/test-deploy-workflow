@@ -48,7 +48,6 @@ jobs:
           run: |
             pushd /tmp
             wget https://github.com/GitTools/GitVersion/releases/download/$GITVERSION_VERSION/gitversion-linux-x64-$GITVERSION_VERSION.tar.gz
-            ls -la
             tar zxvf gitversion-linux-x64-$GITVERSION_VERSION.tar.gz
             export PATH="${PATH}:/tmp"
             popd
