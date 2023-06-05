@@ -26,29 +26,26 @@ jobs:
           - name: build
             run: |
               echo "Build source code"
+              
     test:
       runs-on: ubuntu-latest
       needs: build
       steps:
+        - name: Checkout source code
+          uses: actions/checkout@v3
         - name: execute tests
           run: |
             echo "execute test"
-    # build-docker:
-    #   runs-on: ubuntu-latest
-    #   needs: test
-    #   outputs:
-    #     docker-image: 
-    #   steps:
-    #     - id: build_docker
-    #       run: |
-    #         echo "build docke image"
-    #         echo "DOCKER_IMAGE=new-docker-version" >> $GITHUB_OUTPUT
     build-docker-images:
       runs-on: ubuntu-latest
       needs: test
       outputs:
         IMAGE_TO_DEPLOY: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }}
       steps:
+        - name: Checkout source code
+          uses: actions/checkout@v3
+        - name: Extract Git Tag
+          run: echo "GIT_TAG=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
         - name: manage version
           run: |
             pushd /tmp
@@ -78,7 +75,7 @@ jobs:
             images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
             # generate Docker tags based on the following events/attributes
             tags: |
-              type=sha,enable={{is_default_branch}}
+              type=sha
               type=semver,pattern={{version}}
             labels: |
               maintainer=bisegni@slac.stanford.edu
